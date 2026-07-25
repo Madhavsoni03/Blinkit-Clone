@@ -1,0 +1,80 @@
+<!-- frontend/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blinkit Clone - Quick Commerce</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <span class="logo-text">Blinkit</span>
+            </div>
+            <div class="delivery-info">
+                <span class="delivery-icon">📍</span>
+                <span>Delivery in 10 minutes</span>
+            </div>
+            <div class="cart-icon" onclick="toggleCart()">
+                🛒 <span id="cartCount">0</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- User Registration Modal -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <h2>Welcome to Blinkit!</h2>
+            <input type="text" id="userName" placeholder="Full Name" required>
+            <input type="email" id="userEmail" placeholder="Email" required>
+            <input type="tel" id="userPhone" placeholder="Phone Number" required>
+            <textarea id="userAddress" placeholder="Delivery Address" rows="3"></textarea>
+            <button onclick="registerUser()">Start Shopping</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Categories -->
+        <div class="categories">
+            <div class="category active" onclick="filterProducts('all')">All</div>
+            <div class="category" onclick="filterProducts('Fruits')">Fruits</div>
+            <div class="category" onclick="filterProducts('Vegetables')">Vegetables</div>
+            <div class="category" onclick="filterProducts('Dairy')">Dairy</div>
+            <div class="category" onclick="filterProducts('Snacks')">Snacks</div>
+            <div class="category" onclick="filterProducts('Beverages')">Beverages</div>
+            <div class="category" onclick="filterProducts('Bakery')">Bakery</div>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="products-grid" id="productsGrid">
+            <div class="loading">Loading products...</div>
+        </div>
+    </div>
+
+    <!-- Cart Sidebar -->
+    <div id="cartSidebar" class="cart-sidebar">
+        <div class="cart-header">
+            <h2>Your Cart</h2>
+            <span class="close-cart" onclick="toggleCart()">&times;</span>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <p>Your cart is empty</p>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span id="cartTotal">₹0</span>
+            </div>
+            <button class="checkout-btn" onclick="checkout()">Place Order</button>
+            <button onclick="registerUser()">Start Shopping</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

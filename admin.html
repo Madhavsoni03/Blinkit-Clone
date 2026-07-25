@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blinkit Admin - Database Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .admin-header {
+            background: linear-gradient(135deg, #16213e, #0f3460);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #e94560;
+        }
+
+        .admin-header h1 {
+            font-size: 1.4rem;
+            color: #e94560;
+        }
+
+        .admin-header a {
+            color: #aaa;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .admin-header a:hover {
+            color: #fff;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0;
+            background: #16213e;
+            border-bottom: 1px solid #333;
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            cursor: pointer;
+            color: #888;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .tab:hover {
+            color: #ccc;
+        }
+
+        .tab.active {
+            color: #e94560;
+            border-bottom-color: #e94560;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            gap: 1.5rem;
+            padding: 1.5rem 2rem;
+            background: #16213e;
+        }
+
+        .stat-card {
+            flex: 1;
+            background: #0f3460;
+            padding: 1.2rem;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #333;
+        }
+
+        .stat-card .number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #e94560;
+        }
+
+        .stat-card .label {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 0.3rem;
+        }
+
+        /* Content */
+        .content {
+            padding: 2rem;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #16213e;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th {
+            background: #0f3460;
+            color: #e94560;
+            padding: 0.9rem 1rem;
+            text-align: left;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid #253350;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: #1a2a4a;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.7rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-green {
+            background: #0a3d2a;
+            color: #4ade80;
+        }
+
+        .badge-yellow {
+            background: #3d3a0a;
+            color: #facc15;
+        }
+
+        .badge-red {
+            background: #3d0a0a;
+            color: #f87171;
+        }
+
+        .empty-msg {
+            text-align: center;
+            padding: 3rem;
+            color: #555;
+            font-size: 1.1rem;
+        }
+
+        /* Clear button */
+        .clear-btn {
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 0.5rem 1.2rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .clear-btn:hover {
+            background: #c73a52;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .toolbar h2 {
+            font-size: 1.1rem;
+            color: #ccc;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .stats-bar {
+                flex-direction: column;
+            }
+
+            table {
+                font-size: 0.8rem;
+            }
+
+            th,
+            td {
+                padding: 0.6rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="admin-header">
+        <h1>⚡ Blinkit Admin Panel</h1>
+        <a href="index.html">← Back to Store</a>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <div class="tab active" onclick="showSection('overview')">Overview</div>
+        <div class="tab" onclick="showSection('users')">Users</div>
+        <div class="tab" onclick="showSection('orders')">Orders</div>
+        <div class="tab" onclick="showSection('products')">Products</div>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+        <div class="stat-card">
+            <div class="number" id="statUsers">0</div>
+            <div class="label">Registered Users</div>
+        </div>
+        <div class="stat-card">
+            <div class="number" id="statOrders">0</div>
+            <div class="label">Total Orders</div>
+        </div>
+        <div class="stat-card">
+            <div class="number" id="statRevenue">₹0</div>
+            <div class="label">Total Revenue</div>
+        </div>
+        <div class="stat-card">
+            <div class="number" id="statProducts">24</div>
+            <div class="label">Products Listed</div>
+        </div>
+    </div>
+
+    <div class="content">
+
+        <!-- Overview -->
+        <div class="section active" id="sec-overview">
+            <div class="toolbar">
+                <h2>Recent Orders</h2>
+            </div>
+            <div id="recentOrders"></div>
+        </div>
+
+        <!-- Users -->
+        <div class="section" id="sec-users">
+            <div class="toolbar">
+                <h2>Registered Users</h2>
+                <button class="clear-btn" onclick="clearData('blinkit_user')">Clear User Data</button>
+            </div>
+            <div id="usersTable"></div>
+        </div>
+
+        <!-- Orders -->
+        <div class="section" id="sec-orders">
+            <div class="toolbar">
+                <h2>All Orders</h2>
+                <button class="clear-btn" onclick="clearData('blinkit_orders')">Clear All Orders</button>
+            </div>
+            <div id="ordersTable"></div>
+        </div>
+
+        <!-- Products -->
+        <div class="section" id="sec-products">
+            <div class="toolbar">
+                <h2>Product Catalogue</h2>
+            </div>
+            <div id="productsTable"></div>
+        </div>
+    </div>
+
+    <script>
+        // ── Read localStorage data ─────────────
+        function getUser() {
+            return JSON.parse(localStorage.getItem('blinkit_user')) || null;
+        }
+
+        function getOrders() {
+            return JSON.parse(localStorage.getItem('blinkit_orders')) || [];
+        }
+
+        // ── Product list (same as script.js) ───
+        const products = [
+            { product_id: 1, name: 'Fresh Bananas', category: 'Fruits', unit: '1 dozen', price: 49 },
+            { product_id: 2, name: 'Red Apples', category: 'Fruits', unit: '1 kg', price: 189 },
+            { product_id: 3, name: 'Mangoes (Alphonso)', category: 'Fruits', unit: '1 kg', price: 350 },
+            { product_id: 4, name: 'Oranges', category: 'Fruits', unit: '1 kg', price: 99 },
+            { product_id: 5, name: 'Fresh Tomatoes', category: 'Vegetables', unit: '1 kg', price: 35 },
+            { product_id: 6, name: 'Onions', category: 'Vegetables', unit: '1 kg', price: 29 },
+            { product_id: 7, name: 'Potatoes', category: 'Vegetables', unit: '1 kg', price: 25 },
+            { product_id: 8, name: 'Spinach (Palak)', category: 'Vegetables', unit: '250 g', price: 20 },
+            { product_id: 9, name: 'Amul Toned Milk', category: 'Dairy', unit: '1 litre', price: 56 },
+            { product_id: 10, name: 'Paneer (Fresh)', category: 'Dairy', unit: '200 g', price: 80 },
+            { product_id: 11, name: 'Curd (Dahi)', category: 'Dairy', unit: '400 g', price: 45 },
+            { product_id: 12, name: 'Butter (Amul)', category: 'Dairy', unit: '100 g', price: 56 },
+            { product_id: 13, name: 'Lays Classic Salted', category: 'Snacks', unit: '52 g', price: 20 },
+            { product_id: 14, name: 'Kurkure Masala Munch', category: 'Snacks', unit: '80 g', price: 20 },
+            { product_id: 15, name: 'Dark Fantasy', category: 'Snacks', unit: '75 g', price: 40 },
+            { product_id: 16, name: 'Haldirams Namkeen', category: 'Snacks', unit: '200 g', price: 65 },
+            { product_id: 17, name: 'Coca Cola', category: 'Beverages', unit: '750 ml', price: 40 },
+            { product_id: 18, name: 'Mango Frooti', category: 'Beverages', unit: '600 ml', price: 30 },
+            { product_id: 19, name: 'Red Bull Energy', category: 'Beverages', unit: '250 ml', price: 125 },
+            { product_id: 20, name: 'Paper Boat Aamras', category: 'Beverages', unit: '200 ml', price: 30 },
+            { product_id: 21, name: 'White Bread', category: 'Bakery', unit: '400 g', price: 40 },
+            { product_id: 22, name: 'Pav Buns', category: 'Bakery', unit: '6 pcs', price: 30 },
+            { product_id: 23, name: 'Croissant', category: 'Bakery', unit: '2 pcs', price: 99 },
+            { product_id: 24, name: 'Chocolate Cake', category: 'Bakery', unit: '500 g', price: 350 }
+        ];
+
+        // ── Tab switching ──────────────────────
+        function showSection(name) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('sec-' + name).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // ── Clear data ─────────────────────────
+        function clearData(key) {
+            if (confirm('Are you sure you want to clear this data?')) {
+                localStorage.removeItem(key);
+                loadAll();
+            }
+        }
+
+        // ── Render everything ──────────────────
+        function loadAll() {
+            const user = getUser();
+            const orders = getOrders();
+            const totalRevenue = orders.reduce((s, o) => s + o.total_amount, 0);
+
+            // Stats
+            document.getElementById('statUsers').textContent = user ? 1 : 0;
+            document.getElementById('statOrders').textContent = orders.length;
+            document.getElementById('statRevenue').textContent = '₹' + totalRevenue;
+            document.getElementById('statProducts').textContent = products.length;
+
+            // Users table
+            if (user) {
+                document.getElementById('usersTable').innerHTML = `
+                <table>
+                    <tr><th>Field</th><th>Value</th></tr>
+                    <tr><td>Full Name</td><td>${user.full_name}</td></tr>
+                    <tr><td>Email</td><td>${user.email}</td></tr>
+                    <tr><td>Phone</td><td>${user.phone}</td></tr>
+                    <tr><td>Address</td><td>${user.address || '—'}</td></tr>
+                </table>`;
+            } else {
+                document.getElementById('usersTable').innerHTML = '<div class="empty-msg">No registered users yet.</div>';
+            }
+
+            // Orders table
+            if (orders.length > 0) {
+                const orderRows = orders.map(o => {
+                    const date = new Date(o.ordered_at).toLocaleString();
+                    const itemNames = o.items.map(i => i.product_name + ' ×' + i.quantity).join(', ');
+                    return `<tr>
+                    <td>#${o.order_id}</td>
+                    <td>${o.user.full_name}</td>
+                    <td>${itemNames}</td>
+                    <td>${o.items.length}</td>
+                    <td>₹${o.total_amount}</td>
+                    <td><span class="badge badge-green">${o.status}</span></td>
+                    <td>${date}</td>
+                </tr>`;
+                }).join('');
+
+                const ordersHTML = `
+                <table>
+                    <tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Qty</th><th>Total</th><th>Status</th><th>Date</th></tr>
+                    ${orderRows}
+                </table>`;
+
+                document.getElementById('ordersTable').innerHTML = ordersHTML;
+                document.getElementById('recentOrders').innerHTML = ordersHTML;
+            } else {
+                document.getElementById('ordersTable').innerHTML = '<div class="empty-msg">No orders placed yet.</div>';
+                document.getElementById('recentOrders').innerHTML = '<div class="empty-msg">No orders yet. Orders placed from the store will appear here.</div>';
+            }
+
+            // Products table
+            const categoryGroups = {};
+            products.forEach(p => {
+                if (!categoryGroups[p.category]) categoryGroups[p.category] = [];
+                categoryGroups[p.category].push(p);
+            });
+
+            const productRows = products.map(p => `
+            <tr>
+                <td>${p.product_id}</td>
+                <td>${p.name}</td>
+                <td><span class="badge badge-yellow">${p.category}</span></td>
+                <td>${p.unit}</td>
+                <td>₹${p.price}</td>
+            </tr>
+        `).join('');
+
+            document.getElementById('productsTable').innerHTML = `
+            <table>
+                <tr><th>ID</th><th>Name</th><th>Category</th><th>Unit</th><th>Price</th></tr>
+                ${productRows}
+            </table>`;
+        }
+
+        // ── Init ───────────────────────────────
+        loadAll();
+    </script>
+
+</body>
+
+</html>
